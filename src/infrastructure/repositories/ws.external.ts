@@ -1,4 +1,4 @@
-import { Client, LocalAuth } from "whatsapp-web.js";
+import { Client, LocalAuth, NoAuth } from "whatsapp-web.js";
 import { image as imageQr } from "qr-image";
 import LeadExternal from "../../domain/lead-external.repository";
 
@@ -10,7 +10,8 @@ class WsTransporter extends Client implements LeadExternal {
 
   constructor() {
     super({
-      authStrategy: new LocalAuth(),
+      //authStrategy: new LocalAuth(),
+      authStrategy: new NoAuth(),
       puppeteer: { headless: true },
     });
 
@@ -32,6 +33,11 @@ class WsTransporter extends Client implements LeadExternal {
       console.log('Escanea el codigo QR que esta en la carepta tmp')
       this.generateImage(qr)
     });
+
+    this.on("disconnected", (reason) => {
+      console.log('El cliente se desconectó')
+      this.initialize();
+    });
   }
 
   /**
@@ -50,12 +56,19 @@ class WsTransporter extends Client implements LeadExternal {
     }
   }
 
+  async logoutSrv(): Promise<any> {
+    //this.on('disconnected','NAVIGATION');
+    console.log('logout ws.external')
+    return {message: 'logout'}
+  }
+
   getStatus(): boolean {
     return this.status;
   }
 
   private generateImage = (base64: string) => {
     const path = `${process.cwd()}/tmp`;
+    console.log('generateImage')
     let qr_svg = imageQr(base64, { type: "svg", margin: 4 });
     qr_svg.pipe(require("fs").createWriteStream(`${path}/qr.svg`));
     console.log(`⚡ Recuerda que el QR se actualiza cada minuto ⚡'`);

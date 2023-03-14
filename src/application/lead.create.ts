@@ -21,4 +21,9 @@ export class LeadCreate {
     const responseExSave = await this.leadExternal.sendMsg({ message, phone });//TODO enviar a ws
     return {responseDbSave, responseExSave};
   }
+
+  public async logoutSrv(){
+    const responseLogout = await this.leadExternal.logoutSrv();
+    return responseLogout;
+  }
 }
